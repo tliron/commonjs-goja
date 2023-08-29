@@ -4,4 +4,4 @@ import (
 	"github.com/tliron/commonlog"
 )
 
-var log = commonlog.GetLogger("kutil.js")
+var log = commonlog.GetLogger("commonjs-goja")

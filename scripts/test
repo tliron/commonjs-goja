@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+# -count=1 is the idiomatic way to disable test caching
+# GORACE=history_size=7 is the maximum, only affects "-race"
+
+cd "$ROOT"
+
+COMMONJS_TEST_ROOT=$ROOT \
+KUTIL_LOCK_DEFAULT=debug \
+GORACE=history_size=7 \
+go test -count=1 -timeout=30s ./... "$@"
