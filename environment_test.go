@@ -19,6 +19,10 @@ func TestEnvironment(t *testing.T) {
 	environment := NewEnvironment(urlContext, []exturl.URL{urlContext.NewFileURL(path)})
 	defer environment.Release()
 
+	testEnvironment(t, environment)
+}
+
+func testEnvironment(t *testing.T, environment *Environment) {
 	environment.Extensions = append(environment.Extensions, Extension{
 		Name: "console",
 		Create: func(context *Context) goja.Value {
@@ -33,7 +37,7 @@ func TestEnvironment(t *testing.T) {
 	})
 
 	// Start!
-	if _, err := environment.RequireID("start"); err != nil {
+	if _, err := environment.RequireID("./start"); err != nil {
 		t.Errorf("%s", err)
 	}
 }

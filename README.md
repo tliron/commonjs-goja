@@ -43,7 +43,9 @@ func main() {
     urlContext := exturl.NewContext()
     defer urlContext.Release()
 
-    environment := commonjs.NewEnvironment(urlContext, nil)
+    wd, _ := urlContext.NewWorkingDirFileURL()
+
+    environment := commonjs.NewEnvironment(urlContext, []exturl.URL{wd})
     defer environment.Release()
 
     // Implementation of "console.log"
