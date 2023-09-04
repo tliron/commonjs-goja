@@ -40,8 +40,8 @@ func (self *Environment) AddModule(url exturl.URL, module *Module) {
 	module.Loaded = true
 	if fileUrl, ok := url.(*exturl.FileURL); ok {
 		module.Filename = fileUrl.Path
-		if fileOrigin, ok := fileUrl.Origin().(*exturl.FileURL); ok {
-			module.Path = fileOrigin.Path
+		if fileBase, ok := fileUrl.Base().(*exturl.FileURL); ok {
+			module.Path = fileBase.Path
 		}
 
 		if err := self.Watch(module.Filename); err != nil {

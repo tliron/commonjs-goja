@@ -13,19 +13,19 @@ type CreateResolverFunc func(url exturl.URL, context *Context) ResolveFunc
 
 func NewDefaultResolverCreator(urlContext *exturl.Context, path []exturl.URL, defaultExtension string) CreateResolverFunc {
 	return func(url exturl.URL, jsContext *Context) ResolveFunc {
-		var origins []exturl.URL
+		var bases []exturl.URL
 
 		if url != nil {
-			origins = append([]exturl.URL{url.Origin()}, path...)
+			bases = append([]exturl.URL{url.Base()}, path...)
 		} else {
-			origins = path
+			bases = path
 		}
 
 		context := contextpkg.TODO()
 
 		if defaultExtension == "" {
 			return func(id string, raw bool) (exturl.URL, error) {
-				return urlContext.NewValidURL(context, id, origins)
+				return urlContext.NewValidURL(context, id, bases)
 			}
 		} else {
 			defaultExtension_ := "." + defaultExtension
@@ -36,7 +36,7 @@ func NewDefaultResolverCreator(urlContext *exturl.Context, path []exturl.URL, de
 					}
 				}
 
-				return urlContext.NewValidURL(context, id, origins)
+				return urlContext.NewValidURL(context, id, bases)
 			}
 		}
 	}

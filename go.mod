@@ -7,7 +7,7 @@ require (
 	github.com/dop251/goja v0.0.0-20230828202809-3dbe69dd2b8e
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/tliron/commonlog v0.1.1
-	github.com/tliron/exturl v0.3.0
+	github.com/tliron/exturl v0.4.0
 	github.com/tliron/go-ard v0.1.3
 	github.com/tliron/kutil v0.2.11
 	github.com/tliron/yamlkeys v1.3.6
