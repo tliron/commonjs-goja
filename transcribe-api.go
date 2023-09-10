@@ -1,62 +1,65 @@
 package commonjs
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/beevik/etree"
 	"github.com/tliron/go-ard"
-	"github.com/tliron/kutil/transcribe"
+	"github.com/tliron/go-transcribe"
 	"github.com/tliron/yamlkeys"
 )
 
 type TranscribeAPI struct{}
 
-func (self TranscribeAPI) ValidateFormat(code string, format string) error {
-	return transcribe.Validate(code, format)
+func (self TranscribeAPI) ValidateFormat(code []byte, format string) error {
+	return transcribe.Validate(string(code), format)
 }
 
-func (self TranscribeAPI) Decode(code string, format string, all bool) (ard.Value, error) {
+func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Value, error) {
 	switch format {
-	case "yaml", "":
+	case "yaml":
 		if all {
-			if value, err := yamlkeys.DecodeAll(strings.NewReader(code)); err == nil {
-				value_, _ := ard.NormalizeStringMaps(value)
-				return value_, err
+			if value, err := yamlkeys.DecodeAll(bytes.NewReader(code)); err == nil {
+				value_, _ := ard.ConvertMapsToStringMaps(value)
+				return value_, nil
 			} else {
 				return nil, err
 			}
 		} else {
-			value, _, err := ard.DecodeYAML(code, false)
-			value, _ = ard.NormalizeStringMaps(value)
-			return value, err
+			if value, _, err := ard.DecodeYAML(code, false); err == nil {
+				value, _ = ard.ConvertMapsToStringMaps(value)
+				return value, nil
+			} else {
+				return nil, err
+			}
 		}
 
 	case "json":
-		value, _, err := ard.DecodeJSON(code, false)
-		value, _ = ard.NormalizeStringMaps(value)
-		return value, err
+		return ard.DecodeJSON(code, true)
 
-	case "cjson":
-		value, _, err := ard.DecodeCompatibleJSON(code, false)
-		value, _ = ard.NormalizeStringMaps(value)
-		return value, err
+	case "xjson":
+		return ard.DecodeXJSON(code, true)
 
 	case "xml":
-		value, _, err := ard.DecodeCompatibleXML(code, false)
-		value, _ = ard.NormalizeStringMaps(value)
-		return value, err
+		if value, err := ard.DecodeXML(code); err == nil {
+			value, _ = ard.ConvertMapsToStringMaps(value)
+			return value, nil
+		} else {
+			return nil, err
+		}
 
 	case "cbor":
-		value, _, err := ard.DecodeCBOR(code)
-		value, _ = ard.NormalizeStringMaps(value)
-		return value, err
+		if value, err := ard.DecodeCBOR(code); err == nil {
+			value, _ = ard.ConvertMapsToStringMaps(value)
+			return value, nil
+		} else {
+			return nil, err
+		}
 
 	case "messagepack":
-		value, _, err := ard.DecodeMessagePack(code)
-		value, _ = ard.NormalizeStringMaps(value)
-		return value, err
+		return ard.DecodeMessagePack(code, true)
 
 	default:
 		return nil, fmt.Errorf("unsupported format: %q", format)
@@ -65,9 +68,9 @@ func (self TranscribeAPI) Decode(code string, format string, all bool) (ard.Valu
 
 func (self TranscribeAPI) Encode(value any, format string, indent string, writer io.Writer) (string, error) {
 	if writer == nil {
-		return transcribe.Encode(value, format, indent, false)
+		return transcribe.Stringify(value, format, indent, false, nil)
 	} else {
-		err := transcribe.Write(value, format, indent, false, writer)
+		err := transcribe.Write(value, format, indent, false, writer, false, nil)
 		return "", err
 	}
 }

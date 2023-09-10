@@ -34,7 +34,7 @@ func (self TranscribeAPI) Atob(b64 string) ([]byte, error) {
 }
 
 func (self UtilAPI) DeepCopy(value ard.Value) ard.Value {
-	return ard.SimpleCopy(value)
+	return ard.Copy(value)
 }
 
 func (self UtilAPI) DeepEquals(a ard.Value, b ard.Value) bool {
