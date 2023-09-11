@@ -67,10 +67,14 @@ func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Valu
 }
 
 func (self TranscribeAPI) Encode(value any, format string, indent string, writer io.Writer) (string, error) {
+	transcriber := transcribe.Transcriber{
+		Indent: indent,
+	}
+
 	if writer == nil {
-		return transcribe.Stringify(value, format, indent, false, nil)
+		return transcriber.Stringify(value, format)
 	} else {
-		err := transcribe.Write(value, format, indent, false, writer, false, nil)
+		err := transcriber.Write(value, writer, format)
 		return "", err
 	}
 }
