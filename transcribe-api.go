@@ -14,7 +14,7 @@ import (
 type TranscribeAPI struct{}
 
 func (self TranscribeAPI) ValidateFormat(code []byte, format string) error {
-	return transcribe.Validate(string(code), format)
+	return ard.Validate(code, format)
 }
 
 func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Value, error) {
@@ -51,7 +51,7 @@ func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Valu
 		}
 
 	case "cbor":
-		if value, err := ard.DecodeCBOR(code); err == nil {
+		if value, err := ard.DecodeCBOR(code, false); err == nil {
 			value, _ = ard.ConvertMapsToStringMaps(value)
 			return value, nil
 		} else {
@@ -59,7 +59,7 @@ func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Valu
 		}
 
 	case "messagepack":
-		return ard.DecodeMessagePack(code, true)
+		return ard.DecodeMessagePack(code, false, true)
 
 	default:
 		return nil, fmt.Errorf("unsupported format: %q", format)
