@@ -43,7 +43,7 @@ func (self UtilAPI) DeepEquals(a ard.Value, b ard.Value) bool {
 
 func (self UtilAPI) IsType(value ard.Value, type_ string) (bool, error) {
 	// Special case whereby an integer stored as a float type has been optimized to an integer type
-	if (type_ == "!!float") && ard.IsInteger(value) {
+	if (type_ == "!!float") && util.IsInteger(value) {
 		return true, nil
 	}
 

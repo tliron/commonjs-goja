@@ -8,9 +8,9 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/tliron/commonlog v0.1.1
 	github.com/tliron/exturl v0.4.0
-	github.com/tliron/go-ard v0.2.1
-	github.com/tliron/go-transcribe v0.2.1
-	github.com/tliron/kutil v0.3.2
+	github.com/tliron/go-ard v0.2.4
+	github.com/tliron/go-transcribe v0.2.2
+	github.com/tliron/kutil v0.3.3
 	github.com/tliron/yamlkeys v1.3.6
 )
 
@@ -35,7 +35,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/go-git/go-git/v5 v5.8.1 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
-	github.com/goccy/go-yaml v1.11.0 // indirect
+	github.com/goccy/go-yaml v1.11.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-containerregistry v0.16.1 // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
