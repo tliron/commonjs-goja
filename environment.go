@@ -152,15 +152,15 @@ func (self *Environment) ClearCache() {
 }
 
 func (self *Environment) RequireID(id string) (*goja.Object, error) {
-	return self.requireId(id, self.NewContext(nil, nil))
+	return self.requireId(contextpkg.TODO(), id, self.NewContext(nil, nil))
 }
 
 func (self *Environment) RequireURL(url exturl.URL) (*goja.Object, error) {
 	return self.cachedRequire(url, self.NewContext(url, nil))
 }
 
-func (self *Environment) requireId(id string, context *Context) (*goja.Object, error) {
-	if url, err := context.Resolve(id, false); err == nil {
+func (self *Environment) requireId(ctx contextpkg.Context, id string, context *Context) (*goja.Object, error) {
+	if url, err := context.Resolve(ctx, id, false); err == nil {
 		self.AddModule(url, context.Module)
 		return self.cachedRequire(url, context)
 	} else {

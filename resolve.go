@@ -7,7 +7,7 @@ import (
 	"github.com/tliron/exturl"
 )
 
-type ResolveFunc func(id string, raw bool) (exturl.URL, error)
+type ResolveFunc func(context contextpkg.Context, id string, raw bool) (exturl.URL, error)
 
 type CreateResolverFunc func(url exturl.URL, context *Context) ResolveFunc
 
@@ -21,22 +21,23 @@ func NewDefaultResolverCreator(urlContext *exturl.Context, path []exturl.URL, de
 			bases = path
 		}
 
-		context := contextpkg.TODO()
-
 		if defaultExtension == "" {
-			return func(id string, raw bool) (exturl.URL, error) {
-				return urlContext.NewValidURL(context, id, bases)
+			// ResolveFunc signature
+			return func(context contextpkg.Context, id string, raw bool) (exturl.URL, error) {
+				return urlContext.NewValidAnyOrFileURL(context, id, bases)
 			}
 		} else {
 			defaultExtension_ := "." + defaultExtension
-			return func(id string, raw bool) (exturl.URL, error) {
+
+			// ResolveFunc signature
+			return func(context contextpkg.Context, id string, raw bool) (exturl.URL, error) {
 				if !raw {
 					if filepath.Ext(id) == "" {
 						id += defaultExtension_
 					}
 				}
 
-				return urlContext.NewValidURL(context, id, bases)
+				return urlContext.NewValidAnyOrFileURL(context, id, bases)
 			}
 		}
 	}

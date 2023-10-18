@@ -1,6 +1,8 @@
 package commonjs
 
 import (
+	contextpkg "context"
+
 	"github.com/dop251/goja"
 	"github.com/tliron/exturl"
 )
@@ -38,14 +40,14 @@ func (self *Environment) NewContext(url exturl.URL, parent *Context) *Context {
 	// See: https://nodejs.org/api/modules.html#modules_require_id
 
 	context.Module.Require = self.Runtime.ToValue(func(id string) (goja.Value, error) {
-		return self.requireId(id, &context)
+		return self.requireId(contextpkg.TODO(), id, &context)
 	}).(*goja.Object)
 
 	context.Module.Require.Set("cache", self.Modules)
 
 	context.Module.Require.Set("resolve", func(id string, options *goja.Object) (string, error) {
 		// TODO: options?
-		if url, err := context.Resolve(id, false); err == nil {
+		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
 			return url.String(), nil
 		} else {
 			return "", err

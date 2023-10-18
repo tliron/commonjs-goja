@@ -4,13 +4,13 @@ go 1.21
 
 require (
 	github.com/beevik/etree v1.2.0
-	github.com/dop251/goja v0.0.0-20230919151941-fc55792775de
+	github.com/dop251/goja v0.0.0-20231014103939-873a1496dc8e
 	github.com/mitchellh/hashstructure/v2 v2.0.2
-	github.com/tliron/commonlog v0.2.2
+	github.com/tliron/commonlog v0.2.4
 	github.com/tliron/exturl v0.4.1
 	github.com/tliron/go-ard v0.2.14
 	github.com/tliron/go-transcribe v0.3.0
-	github.com/tliron/kutil v0.3.5
+	github.com/tliron/kutil v0.3.6
 	github.com/tliron/yamlkeys v1.3.6
 )
 
@@ -49,7 +49,7 @@ require (
 	github.com/kortschak/utter v1.5.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.18 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect

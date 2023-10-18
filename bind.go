@@ -1,6 +1,8 @@
 package commonjs
 
 import (
+	contextpkg "context"
+
 	"github.com/dop251/goja"
 	"github.com/tliron/exturl"
 )
@@ -30,7 +32,7 @@ func (self EarlyBind) Unbind() (any, *Context, error) {
 // CreateExtensionFunc signature
 func CreateEarlyBindExtension(context *Context) goja.Value {
 	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
-		if url, err := context.Resolve(id, false); err == nil {
+		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
 			childEnvironment := context.Environment.NewChild()
 			childContext := childEnvironment.NewContext(url, nil)
 			if exports, err := childEnvironment.cachedRequire(url, childContext); err == nil {
@@ -87,7 +89,7 @@ func (self LateBind) Unbind() (any, *Context, error) {
 // CreateExtensionFunc signature
 func CreateLateBindExtension(context *Context) goja.Value {
 	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
-		if url, err := context.Resolve(id, false); err == nil {
+		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
 			return context.Environment.Runtime.ToValue(LateBind{
 				URL:        url,
 				ExportName: exportName,
