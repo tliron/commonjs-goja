@@ -7,10 +7,10 @@ require (
 	github.com/dop251/goja v0.0.0-20231014103939-873a1496dc8e
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/tliron/commonlog v0.2.4
-	github.com/tliron/exturl v0.4.1
+	github.com/tliron/exturl v0.4.2
 	github.com/tliron/go-ard v0.2.14
 	github.com/tliron/go-transcribe v0.3.0
-	github.com/tliron/kutil v0.3.6
+	github.com/tliron/kutil v0.3.7
 	github.com/tliron/yamlkeys v1.3.6
 )
 
@@ -44,7 +44,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/klauspost/compress v1.17.1 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kortschak/utter v1.5.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -69,12 +69,12 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

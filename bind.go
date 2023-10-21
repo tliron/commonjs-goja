@@ -24,12 +24,12 @@ type EarlyBind struct {
 	Context *Context
 }
 
-// Bind interface
+// ([Bind] interface)
 func (self EarlyBind) Unbind() (any, *Context, error) {
 	return self.Value, self.Context, nil
 }
 
-// CreateExtensionFunc signature
+// ([CreateExtensionFunc] signature)
 func CreateEarlyBindExtension(context *Context) goja.Value {
 	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
 		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
@@ -67,7 +67,7 @@ type LateBind struct {
 	Context    *Context
 }
 
-// Bind interface
+// ([Bind] interface)
 func (self LateBind) Unbind() (any, *Context, error) {
 	childEnvironment := self.Context.Environment.NewChild()
 	childContext := childEnvironment.NewContext(self.URL, nil)
@@ -86,7 +86,7 @@ func (self LateBind) Unbind() (any, *Context, error) {
 	}
 }
 
-// CreateExtensionFunc signature
+// ([CreateExtensionFunc] signature)
 func CreateLateBindExtension(context *Context) goja.Value {
 	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
 		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {

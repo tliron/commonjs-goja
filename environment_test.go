@@ -14,7 +14,7 @@ func TestEnvironment(t *testing.T) {
 	urlContext := exturl.NewContext()
 	defer urlContext.Release()
 
-	path := filepath.Join(getRoot(t), "assets")
+	path := filepath.Join(getRoot(t), "examples")
 
 	environment := NewEnvironment(urlContext, []exturl.URL{urlContext.NewFileURL(path)})
 	defer environment.Release()
@@ -23,6 +23,7 @@ func TestEnvironment(t *testing.T) {
 }
 
 func testEnvironment(t *testing.T, environment *Environment) {
+	// Support a "console.log" API
 	environment.Extensions = append(environment.Extensions, Extension{
 		Name: "console",
 		Create: func(context *Context) goja.Value {
@@ -30,7 +31,7 @@ func testEnvironment(t *testing.T, environment *Environment) {
 		},
 	})
 
-	// Support for "bind" (late binding)
+	// Support a "bind" API (using late binding)
 	environment.Extensions = append(environment.Extensions, Extension{
 		Name:   "bind",
 		Create: CreateLateBindExtension,

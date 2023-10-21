@@ -23,7 +23,7 @@ type Module struct {
 
 func (self *Environment) NewModule() *Module {
 	var path []string
-	for _, url := range self.Path {
+	for _, url := range self.BasePaths {
 		path = append(path, url.String())
 	}
 

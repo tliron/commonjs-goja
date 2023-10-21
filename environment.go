@@ -19,7 +19,7 @@ import (
 type Environment struct {
 	Runtime        *goja.Runtime
 	URLContext     *exturl.Context
-	Path           []exturl.URL
+	BasePaths      []exturl.URL
 	Extensions     []Extension
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
@@ -38,12 +38,12 @@ type PrecompileFunc func(url exturl.URL, script string, context *Context) (strin
 
 type OnChangedFunc func(id string, module *Module)
 
-func NewEnvironment(urlContext *exturl.Context, path []exturl.URL) *Environment {
+func NewEnvironment(urlContext *exturl.Context, basePaths []exturl.URL) *Environment {
 	self := Environment{
 		Runtime:        goja.New(),
 		URLContext:     urlContext,
-		Path:           path,
-		CreateResolver: NewDefaultResolverCreator(urlContext, path, "js"),
+		BasePaths:      basePaths,
+		CreateResolver: NewDefaultResolverCreator(urlContext, basePaths, "js", true),
 		Log:            log,
 		programCache:   new(sync.Map),
 	}
@@ -56,7 +56,7 @@ func NewEnvironment(urlContext *exturl.Context, path []exturl.URL) *Environment 
 }
 
 func (self *Environment) NewChild() *Environment {
-	environment := NewEnvironment(self.URLContext, self.Path)
+	environment := NewEnvironment(self.URLContext, self.BasePaths)
 	environment.watcher = self.watcher
 	environment.Extensions = self.Extensions
 	environment.Precompile = self.Precompile
