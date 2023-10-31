@@ -24,7 +24,8 @@ type Environment struct {
 	Modules        *goja.Object
 	Precompile     PrecompileFunc
 	CreateResolver CreateResolverFunc
-	OnChanged      OnChangedFunc
+	PanicHandler   PanicHandlerFunc
+	OnFileModified OnFileModifiedFunc
 	Log            commonlog.Logger
 	Lock           sync.Mutex
 
@@ -36,7 +37,7 @@ type Environment struct {
 
 type PrecompileFunc func(url exturl.URL, script string, context *Context) (string, error)
 
-type OnChangedFunc func(id string, module *Module)
+type OnFileModifiedFunc func(id string, module *Module)
 
 func NewEnvironment(urlContext *exturl.Context, basePaths []exturl.URL) *Environment {
 	self := Environment{
@@ -61,13 +62,14 @@ func (self *Environment) NewChild() *Environment {
 	environment.Extensions = self.Extensions
 	environment.Precompile = self.Precompile
 	environment.CreateResolver = self.CreateResolver
-	environment.OnChanged = self.OnChanged
+	environment.PanicHandler = self.PanicHandler
+	environment.OnFileModified = self.OnFileModified
 	environment.Log = self.Log
 	environment.programCache = self.programCache
 	return environment
 }
 
-func (self *Environment) RestartWatcher() error {
+func (self *Environment) StartWatcher() error {
 	self.watcherLock.Lock()
 	defer self.watcherLock.Unlock()
 
@@ -79,7 +81,7 @@ func (self *Environment) RestartWatcher() error {
 		}
 	}
 
-	if self.OnChanged == nil {
+	if self.OnFileModified == nil {
 		return nil
 	}
 
@@ -93,7 +95,7 @@ func (self *Environment) RestartWatcher() error {
 				module = module_.Export().(*Module)
 			}
 			self.Lock.Unlock()
-			self.OnChanged(id, module)
+			self.OnFileModified(id, module)
 		})
 		return nil
 	} else {
@@ -132,11 +134,26 @@ func (self *Environment) Release() error {
 	return self.StopWatcher()
 }
 
-func (self *Environment) Call(function JavaScriptFunc, arguments ...any) any {
+func (self *Environment) Call(panicHandler PanicHandlerFunc, function JavaScriptFunc, this any, arguments ...any) (any, error) {
 	self.Lock.Lock()
 	defer self.Lock.Unlock()
 
-	return Call(self.Runtime, function, arguments...)
+	if panicHandler == nil {
+		panicHandler = self.PanicHandler
+	}
+
+	return Call(panicHandler, self.Runtime, function, this, arguments...)
+}
+
+func (self *Environment) GetAndCall(panicHandler PanicHandlerFunc, object *goja.Object, name string, this any, arguments ...any) (any, error) {
+	self.Lock.Lock()
+	defer self.Lock.Unlock()
+
+	if panicHandler == nil {
+		panicHandler = self.PanicHandler
+	}
+
+	return GetAndCall(panicHandler, self.Runtime, object, name, this, arguments...)
 }
 
 func (self *Environment) ClearCache() {
