@@ -31,7 +31,13 @@ func (self EarlyBind) Unbind() (any, *Context, error) {
 
 // ([CreateExtensionFunc] signature)
 func CreateEarlyBindExtension(context *Context) goja.Value {
-	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
+	return context.Environment.Runtime.ToValue(func(id string, exportName string) (value goja.Value, err error) {
+		defer func() {
+			if err_ := HandlePanic(recover()); err_ != nil {
+				err = err_
+			}
+		}()
+
 		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
 			childEnvironment := context.Environment.NewChild()
 			childContext := childEnvironment.NewContext(url, nil)
@@ -41,7 +47,7 @@ func CreateEarlyBindExtension(context *Context) goja.Value {
 				if exportName == "" {
 					value = exports.Export()
 				} else {
-					value = exports.Get(exportName).Export()
+					value = exports.Get(exportName).Export() // Get can panic
 				}
 
 				return context.Environment.Runtime.ToValue(EarlyBind{
@@ -68,7 +74,13 @@ type LateBind struct {
 }
 
 // ([Bind] interface)
-func (self LateBind) Unbind() (any, *Context, error) {
+func (self LateBind) Unbind() (value any, context *Context, err error) {
+	defer func() {
+		if err_ := HandlePanic(recover()); err_ != nil {
+			err = err_
+		}
+	}()
+
 	childEnvironment := self.Context.Environment.NewChild()
 	childContext := childEnvironment.NewContext(self.URL, nil)
 	if exports, err := childEnvironment.cachedRequire(self.URL, childContext); err == nil {
@@ -77,7 +89,7 @@ func (self LateBind) Unbind() (any, *Context, error) {
 		if self.ExportName == "" {
 			value = exports.Export()
 		} else {
-			value = exports.Get(self.ExportName).Export()
+			value = exports.Get(self.ExportName).Export() // Get can panic
 		}
 
 		return value, childContext, nil

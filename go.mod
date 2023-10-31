@@ -4,13 +4,13 @@ go 1.21
 
 require (
 	github.com/beevik/etree v1.2.0
-	github.com/dop251/goja v0.0.0-20231014103939-873a1496dc8e
+	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/tliron/commonlog v0.2.4
 	github.com/tliron/exturl v0.4.2
 	github.com/tliron/go-ard v0.2.14
 	github.com/tliron/go-transcribe v0.3.0
-	github.com/tliron/kutil v0.3.7
+	github.com/tliron/kutil v0.3.8
 	github.com/tliron/yamlkeys v1.3.6
 )
 
@@ -30,7 +30,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
@@ -44,7 +44,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.17.1 // indirect
+	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kortschak/utter v1.5.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect

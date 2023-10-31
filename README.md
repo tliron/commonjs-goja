@@ -19,9 +19,9 @@ Features:
 * Optional support for `bind`, which is similar to `require` but exports the JavaScript objects,
   including functions, into a new `goja.Runtime`. This is useful for multi-threaded Go environments
   because a single `goja.Runtime` cannot be used simulatenously by more than one thread. Two variations
-  exist: early binding, which creates the `Runtime` when `bind` is called (low concurrency, high
+  exist: early binding, which creates the `Runtime` when `bind` is called (lower concurrency, higher
   performance), and late binding, which creates the `Runtime` every time the bound object is unbound
-  (high concurrency, lower performance).
+  (higher concurrency, lower performance).
 
 Example
 -------
@@ -32,6 +32,7 @@ Example
 package main
 
 import (
+    "fmt"
     "log"
     "os"
 
@@ -67,12 +68,10 @@ func main() {
     environment.RequireID("./start")
 }
 
-var logger = log.New(os.Stdout, "console: ", log.LstdFlags)
-
 type ConsoleAPI struct{}
 
 func (self ConsoleAPI) Log(message string) {
-    logger.Println(message)
+    fmt.Println(message)
 }
 ```
 

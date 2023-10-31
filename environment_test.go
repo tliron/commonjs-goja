@@ -27,7 +27,7 @@ func testEnvironment(t *testing.T, environment *Environment) {
 	environment.Extensions = append(environment.Extensions, Extension{
 		Name: "console",
 		Create: func(context *Context) goja.Value {
-			return context.Environment.Runtime.ToValue(consoleAPI{})
+			return context.Environment.Runtime.ToValue(consoleApi{})
 		},
 	})
 
@@ -43,9 +43,9 @@ func testEnvironment(t *testing.T, environment *Environment) {
 	}
 }
 
-type consoleAPI struct{}
+type consoleApi struct{}
 
-func (self consoleAPI) Log(message string) {
+func (self consoleApi) Log(message string) {
 	fmt.Println(message)
 }
 
