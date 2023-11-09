@@ -20,46 +20,66 @@ type Context struct {
 }
 
 func (self *Environment) NewContext(url exturl.URL, parent *Context) *Context {
-	context := Context{
+	jsContext := Context{
 		Environment: self,
 		Parent:      parent,
 		Module:      self.NewModule(),
 	}
 
 	if url != nil {
-		self.AddModule(url, context.Module)
+		self.AddModule(url, jsContext.Module)
 	}
 
-	context.Resolve = self.CreateResolver(url, &context)
+	jsContext.Resolve = self.CreateResolver(url, &jsContext)
 
 	for _, extension := range self.Extensions {
-		context.Extensions = append(context.Extensions, extension.Create(&context))
+		jsContext.AppendExtension(extension)
 	}
 
 	// See: https://nodejs.org/api/modules.html#modules_the_module_object
 	// See: https://nodejs.org/api/modules.html#modules_require_id
 
-	context.Module.Require = self.Runtime.ToValue(func(id string) (goja.Value, error) {
-		return self.requireId(contextpkg.TODO(), id, &context)
-	}).(*goja.Object)
-
-	context.Module.Require.Set("cache", self.Modules)
-
-	context.Module.Require.Set("resolve", func(id string, options *goja.Object) (string, error) {
-		// TODO: options?
-		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
-			return url.String(), nil
-		} else {
-			return "", err
-		}
-	})
+	jsContext.Module.Require = self.NewRequire(&jsContext)
 
 	if parent != nil {
-		context.Module.Require.Set("main", parent.Module)
-		parent.Module.Children = append(parent.Module.Children, context.Module)
-	} else {
-		context.Module.Require.Set("main", nil)
+		parent.Module.Children = append(parent.Module.Children, jsContext.Module)
 	}
 
-	return &context
+	return &jsContext
+}
+
+func (self *Context) ResolveAndWatch(context contextpkg.Context, id string, bareId bool) (exturl.URL, error) {
+	if url, err := self.Resolve(context, id, bareId); err == nil {
+		// If it's a file, add to watch
+		if fileUrl, ok := url.(*exturl.FileURL); ok {
+			if err := self.Environment.Watch(fileUrl.Path); err != nil {
+				return nil, err
+			}
+		}
+
+		return url, nil
+	} else {
+		return nil, err
+	}
+}
+
+func (self *Context) RequireAndExport(context contextpkg.Context, url exturl.URL, exportName string) (value any, childJsContext *Context, err error) {
+	defer func() {
+		if err_ := HandleJavaScriptPanic(recover()); err_ != nil {
+			err = err_
+		}
+	}()
+
+	environment := self.Environment.NewChild()
+	jsContext := environment.NewContext(url, self)
+
+	if exports, err := environment.cachedRequireUrl(context, url, jsContext); err == nil {
+		if exportName == "" {
+			return exports.Export(), jsContext, nil
+		} else {
+			return exports.Get(exportName).Export(), jsContext, nil // Get can panic
+		}
+	} else {
+		return nil, nil, err
+	}
 }

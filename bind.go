@@ -1,11 +1,26 @@
 package commonjs
 
 import (
-	contextpkg "context"
-
-	"github.com/dop251/goja"
 	"github.com/tliron/exturl"
 )
+
+type BindFunc func(id string, exportName string) (any, error)
+
+// If value is a [Bind] will unbind it, recursively, and return the bound
+// value and [Context].
+//
+// Otherwise will return the provided value and [Context].
+func Unbind(value any, jsContext *Context) (any, *Context, error) {
+	if bind, ok := value.(Bind); ok {
+		if value, jsContext, err := bind.Unbind(); err == nil {
+			return Unbind(value, jsContext)
+		} else {
+			return nil, nil, err
+		}
+	} else {
+		return value, jsContext, nil
+	}
+}
 
 //
 // Bind
@@ -24,43 +39,27 @@ type EarlyBind struct {
 	Context *Context
 }
 
+func (self *Context) NewEarlyBind(id string, exportName string) (EarlyBind, error) {
+	context, cancelContext := self.Environment.NewTimeoutContext()
+	defer cancelContext()
+
+	if url, err := self.ResolveAndWatch(context, id, false); err == nil {
+		if value, jsContext, err := self.RequireAndExport(context, url, exportName); err == nil {
+			return EarlyBind{
+				Value:   value,
+				Context: jsContext,
+			}, nil
+		} else {
+			return EarlyBind{}, err
+		}
+	} else {
+		return EarlyBind{}, err
+	}
+}
+
 // ([Bind] interface)
 func (self EarlyBind) Unbind() (any, *Context, error) {
 	return self.Value, self.Context, nil
-}
-
-// ([CreateExtensionFunc] signature)
-func CreateEarlyBindExtension(context *Context) goja.Value {
-	return context.Environment.Runtime.ToValue(func(id string, exportName string) (value goja.Value, err error) {
-		defer func() {
-			if err_ := HandlePanic(recover()); err_ != nil {
-				err = err_
-			}
-		}()
-
-		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
-			childEnvironment := context.Environment.NewChild()
-			childContext := childEnvironment.NewContext(url, nil)
-			if exports, err := childEnvironment.cachedRequire(url, childContext); err == nil {
-				var value any
-
-				if exportName == "" {
-					value = exports.Export()
-				} else {
-					value = exports.Get(exportName).Export() // Get can panic
-				}
-
-				return context.Environment.Runtime.ToValue(EarlyBind{
-					Value:   value,
-					Context: childContext,
-				}), nil
-			} else {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	})
 }
 
 //
@@ -73,42 +72,25 @@ type LateBind struct {
 	Context    *Context
 }
 
-// ([Bind] interface)
-func (self LateBind) Unbind() (value any, context *Context, err error) {
-	defer func() {
-		if err_ := HandlePanic(recover()); err_ != nil {
-			err = err_
-		}
-	}()
+func (self *Context) NewLateBind(id string, exportName string) (LateBind, error) {
+	context, cancelContext := self.Environment.NewTimeoutContext()
+	defer cancelContext()
 
-	childEnvironment := self.Context.Environment.NewChild()
-	childContext := childEnvironment.NewContext(self.URL, nil)
-	if exports, err := childEnvironment.cachedRequire(self.URL, childContext); err == nil {
-		var value any
-
-		if self.ExportName == "" {
-			value = exports.Export()
-		} else {
-			value = exports.Get(self.ExportName).Export() // Get can panic
-		}
-
-		return value, childContext, nil
+	if url, err := self.ResolveAndWatch(context, id, false); err == nil {
+		return LateBind{
+			URL:        url,
+			ExportName: exportName,
+			Context:    self,
+		}, nil
 	} else {
-		return nil, nil, err
+		return LateBind{}, err
 	}
 }
 
-// ([CreateExtensionFunc] signature)
-func CreateLateBindExtension(context *Context) goja.Value {
-	return context.Environment.Runtime.ToValue(func(id string, exportName string) (goja.Value, error) {
-		if url, err := context.Resolve(contextpkg.TODO(), id, false); err == nil {
-			return context.Environment.Runtime.ToValue(LateBind{
-				URL:        url,
-				ExportName: exportName,
-				Context:    context,
-			}), nil
-		} else {
-			return nil, err
-		}
-	})
+// ([Bind] interface)
+func (self LateBind) Unbind() (any, *Context, error) {
+	context, cancelContext := self.Context.Environment.NewTimeoutContext()
+	defer cancelContext()
+
+	return self.Context.RequireAndExport(context, self.URL, self.ExportName)
 }

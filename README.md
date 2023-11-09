@@ -37,6 +37,7 @@ import (
     "os"
 
     "github.com/tliron/commonjs-goja"
+    "github.com/tliron/commonjs-goja/api"
     "github.com/tliron/exturl"
     "github.com/dop251/goja"
 )
@@ -47,31 +48,17 @@ func main() {
 
     wd, _ := urlContext.NewWorkingDirFileURL()
 
-    environment := commonjs.NewEnvironment(urlContext, []exturl.URL{wd})
+    environment := commonjs.NewEnvironment(urlContext, wd)
     defer environment.Release()
 
-    // Support a "console.log" API
-    environment.Extensions = append(environment.Extensions, commonjs.Extension{
-        Name: "console",
-        Create: func(context *commonjs.Context) goja.Value {
-            return context.Environment.Runtime.ToValue(ConsoleAPI{})
-        },
-    })
-
-    // Support a "bind" API (using late binding)
-    environment.Extensions = append(environment.Extensions, commonjs.Extension{
-        Name:   "bind",
-        Create: commonjs.CreateLateBindExtension,
-    })
+    // Support a "console" API (console.log, console.trace, etc.)
+	environment.Extensions = append(environment.Extensions, commonjs.Extension{
+		Name:   "console",
+		Create: api.CreateConsoleExtension(environment.Log),
+	})
 
     // Start!
-    environment.RequireID("./start")
-}
-
-type ConsoleAPI struct{}
-
-func (self ConsoleAPI) Log(message string) {
-    fmt.Println(message)
+    environment.Require("./start")
 }
 ```
 

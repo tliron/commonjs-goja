@@ -1,23 +1,26 @@
-package commonjs
+package api
 
 import (
 	"bytes"
 	"fmt"
-	"io"
 
-	"github.com/beevik/etree"
+	"github.com/tliron/commonjs-goja"
 	"github.com/tliron/go-ard"
-	"github.com/tliron/go-transcribe"
 	"github.com/tliron/yamlkeys"
 )
 
-type TranscribeAPI struct{}
-
-func (self TranscribeAPI) ValidateFormat(code []byte, format string) error {
-	return ard.Validate(code, format)
+// ([commonjs.CreateExtensionFunc] signature)
+func CreateARDExtension(jsContext *commonjs.Context) any {
+	return ARD{}
 }
 
-func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Value, error) {
+//
+// ARD
+//
+
+type ARD struct{}
+
+func (self ARD) Decode(code []byte, format string, all bool) (ard.Value, error) {
 	switch format {
 	case "yaml":
 		if all {
@@ -66,21 +69,6 @@ func (self TranscribeAPI) Decode(code []byte, format string, all bool) (ard.Valu
 	}
 }
 
-func (self TranscribeAPI) Encode(value any, format string, indent string, writer io.Writer) (string, error) {
-	transcriber := transcribe.Transcriber{
-		Writer: writer,
-		Format: format,
-		Indent: indent,
-	}
-
-	if writer == nil {
-		return transcriber.Stringify(value)
-	} else {
-		err := transcriber.Write(value)
-		return "", err
-	}
-}
-
-func (self TranscribeAPI) NewXMLDocument() *etree.Document {
-	return etree.NewDocument()
+func (self ARD) ValidateFormat(code []byte, format string) error {
+	return ard.Validate(code, format)
 }

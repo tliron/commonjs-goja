@@ -1,14 +1,19 @@
-package commonjs
+package commonjs_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/dop251/goja"
+	"github.com/tliron/commonjs-goja"
+	"github.com/tliron/commonjs-goja/api"
+	"github.com/tliron/commonlog"
 	"github.com/tliron/exturl"
+
+	_ "github.com/tliron/commonlog/simple"
 )
+
+var log = commonlog.GetLogger("commonjs")
 
 func TestEnvironment(t *testing.T) {
 	urlContext := exturl.NewContext()
@@ -16,37 +21,19 @@ func TestEnvironment(t *testing.T) {
 
 	path := filepath.Join(getRoot(t), "examples")
 
-	environment := NewEnvironment(urlContext, []exturl.URL{urlContext.NewFileURL(path)})
+	environment := commonjs.NewEnvironment(urlContext, urlContext.NewFileURL(path))
 	defer environment.Release()
+
+	environment.Extensions = api.DefaultExtensions{}.Create()
 
 	testEnvironment(t, environment)
 }
 
-func testEnvironment(t *testing.T, environment *Environment) {
-	// Support a "console.log" API
-	environment.Extensions = append(environment.Extensions, Extension{
-		Name: "console",
-		Create: func(context *Context) goja.Value {
-			return context.Environment.Runtime.ToValue(consoleApi{})
-		},
-	})
-
-	// Support a "bind" API (using late binding)
-	environment.Extensions = append(environment.Extensions, Extension{
-		Name:   "bind",
-		Create: CreateLateBindExtension,
-	})
-
+func testEnvironment(t *testing.T, environment *commonjs.Environment) {
 	// Start!
-	if _, err := environment.RequireID("./start"); err != nil {
+	if _, err := environment.Require("./start"); err != nil {
 		t.Errorf("%s", err)
 	}
-}
-
-type consoleApi struct{}
-
-func (self consoleApi) Log(message string) {
-	fmt.Println(message)
 }
 
 func getRoot(t *testing.T) string {
