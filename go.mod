@@ -9,7 +9,7 @@ require (
 	github.com/tliron/commonlog v0.2.8
 	github.com/tliron/exturl v0.4.3
 	github.com/tliron/go-ard v0.2.15
-	github.com/tliron/go-transcribe v0.3.2
+	github.com/tliron/go-transcribe v0.3.3
 	github.com/tliron/kutil v0.3.11
 	github.com/tliron/yamlkeys v1.3.6
 )

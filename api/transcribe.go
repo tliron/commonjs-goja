@@ -40,8 +40,21 @@ func NewTranscribe(stdout io.Writer, stderr io.Writer) *Transcribe {
 
 // Encodes and writes the value. Supported formats are "yaml", "json",
 // "xjson", "xml", "cbor", "messagepack", and "go". The "cbor" and "messsagepack"
-// formats will be encoded in base64 and will ignore the indent argument.
+// formats will ignore the indent argument.
 func (self Transcribe) Write(writer io.Writer, value any, format string, indent string) error {
+	transcriber := transcribe.Transcriber{
+		Writer: writer,
+		Format: format,
+		Indent: indent,
+	}
+
+	return transcriber.Write(value)
+}
+
+// Encodes and writes the value. Supported formats are "yaml", "json",
+// "xjson", "xml", "cbor", "messagepack", and "go". The "cbor" and "messsagepack"
+// formats will be encoded in base64 and will ignore the indent argument.
+func (self Transcribe) WriteText(writer io.Writer, value any, format string, indent string) error {
 	transcriber := transcribe.Transcriber{
 		Writer: writer,
 		Format: format,
@@ -52,6 +65,9 @@ func (self Transcribe) Write(writer io.Writer, value any, format string, indent 
 	return transcriber.Write(value)
 }
 
+// Encodes and prints the value to stdout. Supported formats are "yaml", "json",
+// "xjson", "xml", "cbor", "messagepack", and "go". The "cbor" and "messsagepack"
+// formats will be encoded in base64 and will ignore the indent argument.
 func (self Transcribe) Print(value any, format string, indent string) error {
 	transcriber := transcribe.Transcriber{
 		Writer:      self.Stdout,
@@ -83,6 +99,7 @@ func (self Transcribe) Stringify(value any, format string, indent string) (strin
 	transcriber := transcribe.Transcriber{
 		Format: format,
 		Indent: indent,
+		Base64: true,
 	}
 
 	return transcriber.Stringify(value)
