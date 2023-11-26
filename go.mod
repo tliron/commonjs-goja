@@ -8,9 +8,9 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/tliron/commonlog v0.2.8
 	github.com/tliron/exturl v0.4.3
-	github.com/tliron/go-ard v0.2.15
+	github.com/tliron/go-ard v0.2.16
 	github.com/tliron/go-transcribe v0.3.3
-	github.com/tliron/kutil v0.3.11
+	github.com/tliron/kutil v0.3.13
 	github.com/tliron/yamlkeys v1.3.6
 )
 
@@ -69,12 +69,12 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

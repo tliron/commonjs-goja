@@ -183,21 +183,23 @@ var onces sync.Map
 
 func (self *Util) Once(name string, value goja.Value, this goja.Value, arguments []goja.Value) error {
 	if call, ok := goja.AssertFunction(value); ok {
+		var err error
+
 		call_ := func() error {
 			_, err := call(this, arguments...)
 			return err
 		}
 
 		call__ := func() {
-			commonlog.CallAndLogError(call_, "Util.Once", self.log)
+			err = call_()
 		}
 
 		once, _ := onces.LoadOrStore(name, new(sync.Once))
 		once.(*sync.Once).Do(call__)
 
-		return nil
+		return err
 	} else {
-		return fmt.Errorf("not a \"function\": %T", value)
+		return fmt.Errorf("not a function: %T", value)
 	}
 }
 
