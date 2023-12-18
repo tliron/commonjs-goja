@@ -6,7 +6,7 @@ require (
 	github.com/beevik/etree v1.2.0
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/mitchellh/hashstructure/v2 v2.0.2
-	github.com/tliron/commonlog v0.2.8
+	github.com/tliron/commonlog v0.2.9
 	github.com/tliron/exturl v0.4.3
 	github.com/tliron/go-ard v0.2.16
 	github.com/tliron/go-transcribe v0.3.3

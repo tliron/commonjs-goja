@@ -162,8 +162,8 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/tliron/commonlog v0.2.8 h1:vpKrEsZX4nlneC9673pXpeKqv3cFLxwpzNEZF1qiaQQ=
-github.com/tliron/commonlog v0.2.8/go.mod h1:HgQZrJEuiKLLRvUixtPWGcmTmWWtKkCtywF6x9X5Spw=
+github.com/tliron/commonlog v0.2.9 h1:hxNA/kLKjbfoWSjJX2VOy2BLChmJJExzeoBgMvMIC80=
+github.com/tliron/commonlog v0.2.9/go.mod h1:mFKOlVFWWokA86nVMc21EHdDvdLrHPuSCHuQk7CHWGE=
 github.com/tliron/exturl v0.4.3 h1:BdRjKdnlumesqwrWdtWOjP+4ytkETk3qfshPaOUaz7g=
 github.com/tliron/exturl v0.4.3/go.mod h1:odoBxRKyJ/nEGjqK+AcZy6R7wKhRcVFhnqvmjgACKf0=
 github.com/tliron/go-ard v0.2.16 h1:IqS5bSq1xEQSO5oE+FWarMOFdg1idKSjpksETqBM9Cc=

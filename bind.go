@@ -12,7 +12,8 @@ type BindFunc func(id string, exportName string) (any, error)
 // Otherwise will return the provided value and [Context] as is.
 func Unbind(value any, jsContext *Context) (any, *Context, error) {
 	if bind, ok := value.(Bind); ok {
-		if value, jsContext, err := bind.Unbind(); err == nil {
+		var err error
+		if value, jsContext, err = bind.Unbind(); err == nil {
 			return Unbind(value, jsContext)
 		} else {
 			return nil, nil, err
@@ -35,9 +36,9 @@ type Bind interface {
 //
 
 type EarlyBind struct {
-	Value   any
-	Context *Context
-	Error   error
+	value   any
+	context *Context
+	err     error
 }
 
 // Will attempt to immediately require the id and export the result, storing the
@@ -49,19 +50,19 @@ func (self *Context) NewEarlyBind(id string, exportName string) (EarlyBind, erro
 	var earlyBind EarlyBind
 
 	var url exturl.URL
-	if url, earlyBind.Error = self.ResolveAndWatch(context, id, false); earlyBind.Error == nil {
-		earlyBind.Value, earlyBind.Context, earlyBind.Error = self.RequireAndExport(context, url, exportName)
+	if url, earlyBind.err = self.ResolveAndWatch(context, id, false); earlyBind.err == nil {
+		earlyBind.value, earlyBind.context, earlyBind.err = self.RequireAndExport(context, url, exportName)
 	}
 
-	return earlyBind, earlyBind.Error
+	return earlyBind, earlyBind.err
 }
 
 // ([Bind] interface)
 func (self EarlyBind) Unbind() (any, *Context, error) {
-	if self.Error == nil {
-		return self.Value, self.Context, nil
+	if self.err == nil {
+		return self.value, self.context, nil
 	} else {
-		return nil, nil, self.Error
+		return nil, nil, self.err
 	}
 }
 
@@ -72,10 +73,10 @@ func (self EarlyBind) Unbind() (any, *Context, error) {
 type LateBind struct {
 	EarlyBind
 
-	URL        exturl.URL
-	ExportName string
+	url        exturl.URL
+	exportName string
 
-	Unbound bool
+	unbound bool
 }
 
 // Will resolve the id and store the URL and exportName in a [LateBind]. Only when
@@ -87,10 +88,10 @@ func (self *Context) NewLateBind(id string, exportName string) (LateBind, error)
 
 	if url, err := self.ResolveAndWatch(context, id, false); err == nil {
 		return LateBind{
-			URL:        url,
-			ExportName: exportName,
+			url:        url,
+			exportName: exportName,
 			EarlyBind: EarlyBind{
-				Context: self,
+				context: self,
 			},
 		}, nil
 	} else {
@@ -100,15 +101,15 @@ func (self *Context) NewLateBind(id string, exportName string) (LateBind, error)
 
 // ([Bind] interface)
 func (self LateBind) Unbind() (any, *Context, error) {
-	if self.Unbound {
+	if self.unbound {
 		return self.EarlyBind.Unbind()
 	}
 
-	self.Unbound = true
+	self.unbound = true
 
-	context, cancelContext := self.Context.Environment.NewTimeoutContext()
+	context, cancelContext := self.context.Environment.NewTimeoutContext()
 	defer cancelContext()
 
-	self.Value, self.Context, self.Error = self.Context.RequireAndExport(context, self.URL, self.ExportName)
-	return self.Value, self.Context, self.Error
+	self.value, self.context, self.err = self.context.RequireAndExport(context, self.url, self.exportName)
+	return self.value, self.context, self.err
 }
