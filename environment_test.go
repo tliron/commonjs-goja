@@ -7,13 +7,10 @@ import (
 
 	"github.com/tliron/commonjs-goja"
 	"github.com/tliron/commonjs-goja/api"
-	"github.com/tliron/commonlog"
 	"github.com/tliron/exturl"
 
 	_ "github.com/tliron/commonlog/simple"
 )
-
-var log = commonlog.GetLogger("commonjs")
 
 func TestEnvironment(t *testing.T) {
 	urlContext := exturl.NewContext()
@@ -31,7 +28,7 @@ func TestEnvironment(t *testing.T) {
 
 func testEnvironment(t *testing.T, environment *commonjs.Environment) {
 	// Start!
-	if _, err := environment.Require("./start"); err != nil {
+	if _, err := environment.Require("./start", false, nil); err != nil {
 		t.Errorf("%s", err)
 	}
 }

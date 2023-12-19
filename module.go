@@ -38,6 +38,7 @@ func (self *Environment) AddModule(url exturl.URL, module *Module) {
 	module.Id = url.Key()
 	module.IsPreloading = false
 	module.Loaded = true
+
 	if fileUrl, ok := url.(*exturl.FileURL); ok {
 		module.Filename = fileUrl.Path
 		if fileBase, ok := fileUrl.Base().(*exturl.FileURL); ok {
@@ -45,7 +46,7 @@ func (self *Environment) AddModule(url exturl.URL, module *Module) {
 		}
 
 		if err := self.Watch(module.Filename); err != nil {
-			self.Log.Errorf("%s", err.Error())
+			self.Log.Error(err.Error())
 		}
 	}
 

@@ -8,12 +8,13 @@ Supports `require`, `exports`, and more, following the
 
 Features:
 
-* Customize the environment with your own special APIs. Useful optional APIs are provided.
+* Customize the JavaScript environment with your own special APIs. A set of useful optional APIs are
+  included.
+* By default `require` supports full URLs and can resolve paths relative to the current module's
+  location. But this can be customized to support your own special resolution and code loading method
+  (e.g. loading modules from a database).
 * Automatically converts Go field names to dromedary case for a more idiomatic JavaScript experience,
   e.g. `.DoTheThing` becomes `.doTheThing`.
-* By default `require` supports full URLs and can resolve paths relative to the current module's
-  location. But this can be customized to support your own special resolution and loading method
-  (e.g. loading modules from a database).
 * Optional support for watching changes to all resolved JavaScript files if they are in the local
   filesystem, allowing your application to restart or otherwise respond to live code updates.
 * Optional support for `bind`, which is similar to `require` but exports the JavaScript objects,
@@ -32,14 +33,9 @@ Example
 package main
 
 import (
-    "fmt"
-    "log"
-    "os"
-
     "github.com/tliron/commonjs-goja"
     "github.com/tliron/commonjs-goja/api"
     "github.com/tliron/exturl"
-    "github.com/dop251/goja"
 )
 
 func main() {
@@ -51,14 +47,10 @@ func main() {
     environment := commonjs.NewEnvironment(urlContext, wd)
     defer environment.Release()
 
-    // Support a "console" API (console.log, console.trace, etc.)
-	environment.Extensions = append(environment.Extensions, commonjs.Extension{
-		Name:   "console",
-		Create: api.CreateConsoleExtension(environment.Log),
-	})
+    environment.Extensions = api.DefaultExtensions{}.Create()
 
     // Start!
-    environment.Require("./start")
+    environment.Require("./start", false, nil)
 }
 ```
 

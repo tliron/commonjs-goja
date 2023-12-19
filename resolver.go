@@ -9,14 +9,14 @@ import (
 
 type ResolveFunc func(context contextpkg.Context, id string, bareId bool) (exturl.URL, error)
 
-type CreateResolverFunc func(url exturl.URL, jsContext *Context) ResolveFunc
+type CreateResolverFunc func(fromUrl exturl.URL, jsContext *Context) ResolveFunc
 
 func NewDefaultResolverCreator(defaultExtension string, allowFilePaths bool, urlContext *exturl.Context, basePaths ...exturl.URL) CreateResolverFunc {
 	// CreateResolverFunc signature
-	return func(url exturl.URL, jsContext *Context) ResolveFunc {
+	return func(fromUrl exturl.URL, jsContext *Context) ResolveFunc {
 		basePaths_ := basePaths // new var for capture
-		if url != nil {
-			basePaths_ = append([]exturl.URL{url.Base()}, basePaths_...)
+		if fromUrl != nil {
+			basePaths_ = append([]exturl.URL{fromUrl.Base()}, basePaths_...)
 		}
 
 		if defaultExtension == "" {

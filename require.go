@@ -4,35 +4,39 @@ import (
 	"github.com/dop251/goja"
 )
 
-func (self *Environment) NewRequire(jsContext *Context) *goja.Object {
-	require := func(id string) (goja.Value, error) {
-		context, cancelContext := self.NewTimeoutContext()
+func (self *Context) NewRequire() *goja.Object {
+	require := func(id string) (*goja.Object, error) {
+		context, cancelContext := self.Environment.NewTimeoutContext()
 		defer cancelContext()
 
-		return self.require(context, id, jsContext)
+		if object, _, err := self.ResolveAndRequire(context, id, false, false, nil); err == nil {
+			return object, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	resolve := func(id string, options *goja.Object) (string, error) {
-		// TODO: support resolve options
+		// TODO: support CommonJS resolve options
 
-		context, cancelContext := self.NewTimeoutContext()
+		context, cancelContext := self.Environment.NewTimeoutContext()
 		defer cancelContext()
 
-		if url, err := jsContext.Resolve(context, id, false); err == nil {
+		if url, err := self.Resolve(context, id, false); err == nil {
 			return url.String(), nil
 		} else {
 			return "", err
 		}
 	}
 
-	requireObject := self.Runtime.ToValue(require).(*goja.Object)
+	requireObject := self.Environment.Runtime.ToValue(require).(*goja.Object)
 
-	requireObject.Set("cache", self.Modules)
+	requireObject.Set("cache", self.Environment.Modules)
 
 	requireObject.Set("resolve", resolve)
 
-	if jsContext.Parent != nil {
-		requireObject.Set("main", jsContext.Parent.Module)
+	if self.Parent != nil {
+		requireObject.Set("main", self.Parent.Module)
 	} else {
 		requireObject.Set("main", nil)
 	}

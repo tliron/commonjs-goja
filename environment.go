@@ -2,8 +2,6 @@ package commonjs
 
 import (
 	contextpkg "context"
-	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -29,6 +27,7 @@ type Environment struct {
 	CreateResolver CreateResolverFunc
 	OnFileModified OnFileModifiedFunc
 	Timeout        time.Duration
+	Strict         bool
 	Log            commonlog.Logger
 	Lock           sync.Mutex
 
@@ -53,6 +52,7 @@ func NewEnvironment(urlContext *exturl.Context, basePaths ...exturl.URL) *Enviro
 		Modules:        NewThreadSafeObject().NewDynamicObject(runtime),
 		CreateResolver: NewDefaultResolverCreator("js", true, urlContext, basePaths...),
 		Timeout:        DEFAULT_TIMEOUT,
+		Strict:         true,
 		Log:            log,
 		programCache:   new(sync.Map),
 	}
@@ -64,6 +64,8 @@ func (self *Environment) NewChild() *Environment {
 	environment.Precompile = self.Precompile
 	environment.CreateResolver = self.CreateResolver
 	environment.OnFileModified = self.OnFileModified
+	environment.Timeout = self.Timeout
+	environment.Strict = self.Strict
 	environment.Log = self.Log
 	environment.watcher = self.watcher
 	environment.programCache = self.programCache
@@ -165,134 +167,22 @@ func (self *Environment) ClearCache() {
 	self.Modules = NewThreadSafeObject().NewDynamicObject(self.Runtime)
 }
 
-func (self *Environment) Require(id string) (*goja.Object, error) {
+func (self *Environment) Require(id string, bareId bool, userContext any) (*goja.Object, error) {
 	context, cancelContext := self.NewTimeoutContext()
 	defer cancelContext()
 
-	return self.require(context, id, self.NewContext(nil, nil))
-}
-
-func (self *Environment) RequireURL(url exturl.URL) (*goja.Object, error) {
-	context, cancelContext := self.NewTimeoutContext()
-	defer cancelContext()
-
-	return self.cachedRequireUrl(context, url, self.NewContext(url, nil))
-}
-
-func (self *Environment) require(context contextpkg.Context, id string, jsContext *Context) (*goja.Object, error) {
-	if url, err := jsContext.Resolve(context, id, false); err == nil {
-		self.AddModule(url, jsContext.Module)
-		return self.cachedRequireUrl(context, url, jsContext)
+	jsContext := self.NewContext(nil, nil, userContext)
+	if url, err := jsContext.Resolve(context, id, bareId); err == nil {
+		jsContext.setUrl(url)
+		return jsContext.require(context, url)
 	} else {
 		return nil, err
 	}
 }
 
-func (self *Environment) cachedRequireUrl(context contextpkg.Context, url exturl.URL, jsContext *Context) (*goja.Object, error) {
-	key := url.Key()
+func (self *Environment) RequireURL(url exturl.URL, userContext any) (*goja.Object, error) {
+	context, cancelContext := self.NewTimeoutContext()
+	defer cancelContext()
 
-	// Try cache
-	if exports, loaded := self.exportsCache.Load(key); loaded {
-		// Cache hit
-		return exports.(*goja.Object), nil
-	} else {
-		// Cache miss
-		if exports, err := self.requireUrl(context, url, jsContext); err == nil {
-			if exports_, loaded := self.exportsCache.LoadOrStore(key, exports); loaded {
-				// Cache hit
-				return exports_.(*goja.Object), nil
-			} else {
-				// Cache miss
-				return exports, nil
-			}
-		} else {
-			return nil, err
-		}
-	}
-}
-
-func (self *Environment) requireUrl(context contextpkg.Context, url exturl.URL, jsContext *Context) (*goja.Object, error) {
-	// Create a child context
-	jsContext = self.NewContext(url, jsContext)
-
-	if program, err := self.cachedCompile(context, url, jsContext); err == nil {
-		if value, err := self.Runtime.RunProgram(program); err == nil {
-			if call, ok := goja.AssertFunction(value); ok {
-				// See: self.compile_ for arguments
-				arguments := []goja.Value{
-					jsContext.Module.Exports,
-					jsContext.Module.Require,
-					self.Runtime.ToValue(jsContext.Module),
-					self.Runtime.ToValue(jsContext.Module.Filename),
-					self.Runtime.ToValue(jsContext.Module.Path),
-				}
-
-				arguments = append(arguments, jsContext.Extensions...)
-
-				if _, err := call(nil, arguments...); err == nil {
-					return jsContext.Module.Exports, nil
-				} else {
-					return nil, UnwrapJavaScriptException(err)
-				}
-			} else {
-				// Should never happen
-				return nil, fmt.Errorf("invalid module: %v", value)
-			}
-		} else {
-			return nil, UnwrapJavaScriptException(err)
-		}
-	} else {
-		return nil, UnwrapJavaScriptException(err)
-	}
-}
-
-func (self *Environment) cachedCompile(context contextpkg.Context, url exturl.URL, jsContext *Context) (*goja.Program, error) {
-	key := url.Key()
-
-	// Try cache
-	if program, loaded := self.programCache.Load(key); loaded {
-		// Cache hit
-		return program.(*goja.Program), nil
-	} else {
-		// Cache miss
-		if program, err := self.compile(context, url, jsContext); err == nil {
-			if program_, loaded := self.programCache.LoadOrStore(key, program); loaded {
-				// Cache hit
-				return program_.(*goja.Program), nil
-			} else {
-				// Cache miss
-				return program, nil
-			}
-		} else {
-			return nil, err
-		}
-	}
-}
-
-func (self *Environment) compile(context contextpkg.Context, url exturl.URL, jsContext *Context) (*goja.Program, error) {
-	if script, err := exturl.ReadString(context, url); err == nil {
-		// Precompile
-		if self.Precompile != nil {
-			if script, err = self.Precompile(url, script, jsContext); err != nil {
-				return nil, err
-			}
-		}
-
-		// See: https://nodejs.org/api/modules.html#modules_the_module_wrapper
-		var builder strings.Builder
-		builder.WriteString("(function(exports, require, module, __filename, __dirname")
-		for _, extension := range self.Extensions {
-			builder.WriteString(", ")
-			builder.WriteString(extension.Name)
-		}
-		builder.WriteString(") {\n")
-		builder.WriteString(script)
-		builder.WriteString("\n});")
-		script = builder.String()
-		//log.Infof("%s", script)
-
-		return goja.Compile(url.String(), script, true)
-	} else {
-		return nil, err
-	}
+	return self.NewContext(url, nil, userContext).require(context, url)
 }

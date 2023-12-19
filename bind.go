@@ -51,7 +51,7 @@ func (self *Context) NewEarlyBind(id string, exportName string) (EarlyBind, erro
 
 	var url exturl.URL
 	if url, earlyBind.err = self.ResolveAndWatch(context, id, false); earlyBind.err == nil {
-		earlyBind.value, earlyBind.context, earlyBind.err = self.RequireAndExport(context, url, exportName)
+		earlyBind.value, earlyBind.context, earlyBind.err = self.RequireAndExport(context, url, true, nil, exportName)
 	}
 
 	return earlyBind, earlyBind.err
@@ -110,6 +110,6 @@ func (self LateBind) Unbind() (any, *Context, error) {
 	context, cancelContext := self.context.Environment.NewTimeoutContext()
 	defer cancelContext()
 
-	self.value, self.context, self.err = self.context.RequireAndExport(context, self.url, self.exportName)
+	self.value, self.context, self.err = self.context.RequireAndExport(context, self.url, true, nil, self.exportName)
 	return self.value, self.context, self.err
 }
