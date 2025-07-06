@@ -167,12 +167,19 @@ func (self *Util) Failf(format string, args ...any) {
 	util.Failf(format, args...)
 }
 
-func (self *Util) Now() time.Time {
-	return time.Now()
+func (self *Util) TimeFromUnix(seconds int64, nanoseconds int64) time.Time {
+	return time.Unix(seconds, nanoseconds)
 }
 
-func (self *Util) NowString() string {
-	return self.Now().Format(time.RFC3339Nano)
+func (self *Util) FormatTime(t time.Time, format string) string {
+	if format == "" {
+		format = time.RFC3339Nano
+	}
+	return t.Format(format)
+}
+
+func (self *Util) Now() time.Time {
+	return time.Now()
 }
 
 func (self *Util) Mutex() util.RWLocker {

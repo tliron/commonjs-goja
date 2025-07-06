@@ -2,7 +2,6 @@ package commonjs
 
 import (
 	"github.com/dop251/goja"
-	"github.com/tliron/exturl"
 )
 
 //
@@ -34,21 +33,6 @@ func (self *Environment) NewModule() *Module {
 	}
 }
 
-func (self *Environment) AddModule(url exturl.URL, module *Module) {
-	module.Id = url.Key()
-	module.IsPreloading = false
-	module.Loaded = true
-
-	if fileUrl, ok := url.(*exturl.FileURL); ok {
-		module.Filename = fileUrl.Path
-		if fileBase, ok := fileUrl.Base().(*exturl.FileURL); ok {
-			module.Path = fileBase.Path
-		}
-
-		if err := self.Watch(module.Filename); err != nil {
-			self.Log.Error(err.Error())
-		}
-	}
-
+func (self *Environment) AddModule(module *Module) {
 	self.Modules.Set(module.Id, module)
 }

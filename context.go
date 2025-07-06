@@ -15,6 +15,7 @@ import (
 
 type Context struct {
 	Environment *Environment
+	URL         exturl.URL
 	Parent      *Context
 	UserContext any
 	Module      *Module
@@ -25,15 +26,17 @@ type Context struct {
 func (self *Environment) NewContext(url exturl.URL, parent *Context, userContext any) *Context {
 	jsContext := Context{
 		Environment: self,
+		URL:         url,
 		Parent:      parent,
 		UserContext: userContext,
 		Module:      self.NewModule(),
 	}
 
-	jsContext.setUrl(url)
-
-	for _, extension := range self.Extensions {
-		jsContext.AppendExtension(extension)
+	if url != nil {
+		jsContext.initialize(url)
+	} else {
+		// Temporary resolver until we initialize with a URL
+		jsContext.Resolve = self.CreateResolver(nil, &jsContext)
 	}
 
 	// See: https://nodejs.org/api/modules.html#modules_the_module_object
@@ -81,8 +84,7 @@ func (self *Context) Require(context contextpkg.Context, url exturl.URL, childEn
 	}
 
 	jsContext := environment.NewContext(url, self, userContext)
-
-	if value, err := jsContext.require(context, url); err == nil {
+	if value, err := jsContext.require(context); err == nil {
 		return value, jsContext, nil
 	} else {
 		return nil, nil, err
@@ -107,21 +109,27 @@ func (self *Context) RequireAndExport(context contextpkg.Context, url exturl.URL
 	}
 }
 
-func (self *Context) require(context contextpkg.Context, url exturl.URL) (*goja.Object, error) {
-	key := url.Key()
+func (self *Context) require(context contextpkg.Context) (*goja.Object, error) {
+	key := self.URL.Key()
+
+	self.Module.IsPreloading = false
 
 	// Try cache
 	if exports, loaded := self.Environment.exportsCache.Load(key); loaded {
 		// Cache hit
+		self.Module.Loaded = true
 		return exports.(*goja.Object), nil
 	} else {
 		// Cache miss
-		if exports, err := self.runModule(context, url); err == nil {
+		if exports, err := self.runModule(context); err == nil {
 			if exports_, loaded := self.Environment.exportsCache.LoadOrStore(key, exports); loaded {
 				// Cache hit
+				self.Module.Loaded = true
 				return exports_.(*goja.Object), nil
 			} else {
 				// Cache miss
+				self.Module.Loaded = true
+				self.Environment.AddModule(self.Module)
 				return exports, nil
 			}
 		} else {
@@ -130,8 +138,8 @@ func (self *Context) require(context contextpkg.Context, url exturl.URL) (*goja.
 	}
 }
 
-func (self *Context) runModule(context contextpkg.Context, url exturl.URL) (*goja.Object, error) {
-	if program, err := self.getModule(context, url); err == nil {
+func (self *Context) runModule(context contextpkg.Context) (*goja.Object, error) {
+	if program, err := self.getModule(context); err == nil {
 		if value, err := self.Environment.Runtime.RunProgram(program); err == nil {
 			if call, ok := goja.AssertFunction(value); ok {
 				// See: self.compile for arguments
@@ -162,8 +170,8 @@ func (self *Context) runModule(context contextpkg.Context, url exturl.URL) (*goj
 	}
 }
 
-func (self *Context) getModule(context contextpkg.Context, url exturl.URL) (*goja.Program, error) {
-	key := url.Key()
+func (self *Context) getModule(context contextpkg.Context) (*goja.Program, error) {
+	key := self.URL.Key()
 
 	// Try cache
 	if program, loaded := self.Environment.programCache.Load(key); loaded {
@@ -171,7 +179,7 @@ func (self *Context) getModule(context contextpkg.Context, url exturl.URL) (*goj
 		return program.(*goja.Program), nil
 	} else {
 		// Cache miss
-		if program, err := self.compile(context, url); err == nil {
+		if program, err := self.compile(context); err == nil {
 			if program_, loaded := self.Environment.programCache.LoadOrStore(key, program); loaded {
 				// Cache hit
 				return program_.(*goja.Program), nil
@@ -185,11 +193,11 @@ func (self *Context) getModule(context contextpkg.Context, url exturl.URL) (*goj
 	}
 }
 
-func (self *Context) compile(context contextpkg.Context, url exturl.URL) (*goja.Program, error) {
-	if script, err := exturl.ReadString(context, url); err == nil {
+func (self *Context) compile(context contextpkg.Context) (*goja.Program, error) {
+	if script, err := exturl.ReadString(context, self.URL); err == nil {
 		// Precompile
 		if self.Environment.Precompile != nil {
-			if script, err = self.Environment.Precompile(url, script, self); err != nil {
+			if script, err = self.Environment.Precompile(self.URL, script, self); err != nil {
 				return nil, err
 			}
 		}
@@ -207,15 +215,29 @@ func (self *Context) compile(context contextpkg.Context, url exturl.URL) (*goja.
 		script = builder.String()
 		//log.Infof("%s", script)
 
-		return goja.Compile(url.String(), script, self.Environment.Strict)
+		return goja.Compile(self.URL.String(), script, self.Environment.Strict)
 	} else {
 		return nil, err
 	}
 }
 
-func (self *Context) setUrl(url exturl.URL) {
-	if url != nil {
-		self.Environment.AddModule(url, self.Module)
+func (self *Context) initialize(url exturl.URL) {
+	self.URL = url
+
+	self.Module.Id = url.Key()
+
+	if fileUrl, ok := url.(*exturl.FileURL); ok {
+		self.Module.Filename = fileUrl.Path
+
+		if err := self.Environment.Watch(self.Module.Filename); err != nil {
+			self.Environment.Log.Error(err.Error())
+		}
+
+		if baseUrl, ok := fileUrl.Base().(*exturl.FileURL); ok {
+			self.Module.Path = baseUrl.Path
+		}
 	}
+
 	self.Resolve = self.Environment.CreateResolver(url, self)
+	self.AppendExtensions()
 }

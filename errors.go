@@ -9,11 +9,6 @@ import (
 
 func UnwrapJavaScriptException(err error) error {
 	if exception, ok := err.(*goja.Exception); ok {
-		// This will work only if it's the *current* Go error in the runtime
-		if wrapped := exception.Unwrap(); wrapped != nil {
-			return UnwrapJavaScriptException(wrapped)
-		}
-
 		switch exported := exception.Value().Export().(type) {
 		case error:
 			return UnwrapJavaScriptException(exported)
@@ -30,7 +25,8 @@ func UnwrapJavaScriptException(err error) error {
 			}
 
 		default:
-			return errors.New(util.ToString(exported))
+			// This will work only if it's the *current* Go error in the runtime
+			return UnwrapJavaScriptException(exception)
 		}
 	}
 

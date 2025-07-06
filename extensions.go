@@ -34,6 +34,12 @@ func NewExtensions(extensions map[string]CreateExtensionFunc) []Extension {
 	return extensions_
 }
 
+func (self *Context) AppendExtensions() {
+	for _, extension := range self.Environment.Extensions {
+		self.AppendExtension(extension)
+	}
+}
+
 func (self *Context) AppendExtension(extension Extension) {
 	if extension := self.CreateExtension(extension); extension != nil {
 		self.Extensions = append(self.Extensions, extension)

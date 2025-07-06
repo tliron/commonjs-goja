@@ -173,8 +173,8 @@ func (self *Environment) Require(id string, bareId bool, userContext any) (*goja
 
 	jsContext := self.NewContext(nil, nil, userContext)
 	if url, err := jsContext.Resolve(context, id, bareId); err == nil {
-		jsContext.setUrl(url)
-		return jsContext.require(context, url)
+		jsContext.initialize(url)
+		return jsContext.require(context)
 	} else {
 		return nil, err
 	}
@@ -184,5 +184,5 @@ func (self *Environment) RequireURL(url exturl.URL, userContext any) (*goja.Obje
 	context, cancelContext := self.NewTimeoutContext()
 	defer cancelContext()
 
-	return self.NewContext(url, nil, userContext).require(context, url)
+	return self.NewContext(url, nil, userContext).require(context)
 }
