@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/dop251/goja"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 func UnwrapJavaScriptException(err error) error {

@@ -8,7 +8,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/tliron/commonlog"
 	"github.com/tliron/exturl"
-	"github.com/tliron/kutil/fswatch"
+	"github.com/tliron/go-kutil/fswatch"
 )
 
 const DEFAULT_TIMEOUT = time.Second * 5

@@ -14,7 +14,7 @@ import (
 	"github.com/tliron/commonjs-goja"
 	"github.com/tliron/commonlog"
 	"github.com/tliron/go-ard"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 // ([commonjs.CreateExtensionFunc] signature)

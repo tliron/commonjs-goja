@@ -9,7 +9,7 @@ import (
 	"github.com/tliron/commonjs-goja"
 	"github.com/tliron/commonlog"
 	"github.com/tliron/exturl"
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 func CreateEnvExtension(arguments map[string]string) commonjs.CreateExtensionFunc {

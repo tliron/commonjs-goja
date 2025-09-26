@@ -3,7 +3,7 @@ package commonjs
 import (
 	"reflect"
 
-	"github.com/tliron/kutil/util"
+	"github.com/tliron/go-kutil/util"
 )
 
 var DromedaryCaseMapper dromedaryCaseMapper
